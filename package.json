@@ -1,0 +1,18 @@
+{
+  "name": "word-math-omml-repairer",
+  "version": "1.0.0",
+  "description": "Word 数学公式 (OMML) 智能检测与排版修复专家",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": ["word", "omml", "math", "mineru", "docx", "latex", "repair"],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "katex": "^0.16.11"
+  },
+  "devDependencies": {
+    "electron": "^44.9.1"
+  }
+}

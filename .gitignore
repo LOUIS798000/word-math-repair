@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Cache and build outputs
+rendered_pages/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary and export files
+*.tmp*
+*.log
+dist/
+build/
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word 公式修复工具</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="node_modules/katex/dist/katex.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 桌面端极简风格顶部工具栏 -->
+  <header class="app-header">
+    <div class="header-left">
+      <button id="btnToggleSidebar" class="btn-icon-sidebar" title="收起 / 展开侧边栏">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
+      <div class="app-brand-logo-wrap" title="Word 公式修复工具">
+        <img src="icon.png" alt="Logo" class="app-brand-logo-img">
+      </div>
+      <div class="app-title-group">
+        <h1 id="appHeaderDocTitle">Word 公式修复工具</h1>
+        <div class="header-pill-tag" id="appHeaderSub">准备就绪 · 支持拖拽打开</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button id="btnOpenFile" class="btn btn-secondary">
+        <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>打开文档</span>
+      </button>
+      <button id="btnQuickSample" class="btn btn-secondary" title="载入示例测试试卷">
+        <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span>示例试卷</span>
+      </button>
+      <button id="btnOpenInWord" class="btn btn-terracotta" title="直接在系统 Microsoft Word 软件中全屏打开此文档">
+        <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        <span>在 Word 中打开</span>
+      </button>
+      <button id="btnRepairAndSave" class="btn btn-primary" disabled title="保存规范化修改后的 Word 文档">
+        <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>保存文档</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体工作区 -->
+  <div class="main-container">
+    <!-- 左侧可折叠功能侧边栏 -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-section">
+        <div class="section-header">
+          <h2>当前文档</h2>
+        </div>
+        <div class="file-card" id="currentFileCard">
+          <div class="file-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div class="file-info">
+            <div class="file-name" id="labelFileName">尚未选择文档</div>
+            <div class="file-path" id="labelFilePath">点击上方按钮或直接拖入 .docx 试卷</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-header">
+          <h2>排版规范</h2>
+          <div class="quick-preset-links">
+            <button id="btnSelectAllRules" class="link-btn">全选</button>
+            <span class="divider">/</span>
+            <button id="btnResetRules" class="link-btn">推荐</button>
+            <span class="divider">/</span>
+            <button id="btnClearRules" class="link-btn">清空</button>
+          </div>
+        </div>
+
+        <div class="rules-list">
+          <!-- 规则 1 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixNaryEmptyOperand">消除积分虚线框</label>
+              <p class="rule-desc">补全遗漏的被积项，消除 Word 积分后的虚线方框 <code>[::]</code></p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixNaryEmptyOperand" data-rule="fixNaryEmptyOperand" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 2 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixIsolatedDelimiters">修复括号上标</label>
+              <p class="rule-desc">修复 <code>(式子)^n</code> 的括号上标结构，防止括号被误删或错位</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixIsolatedDelimiters" data-rule="fixIsolatedDelimiters" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 3 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_splitGluedTokens">拆分连写函数</label>
+              <p class="rule-desc">拆分连写的 <code>lncos</code>、<code>sincos</code>、<code>lnx</code> 等，恢复标准间距</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_splitGluedTokens" data-rule="splitGluedTokens" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 4 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixLimits">极限下标居中</label>
+              <p class="rule-desc">将 <code>lim</code> 的右下角标转为标准正下方居中显示</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixLimits" data-rule="fixLimits" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 5 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixNaryLimLoc">求和/乘积上下标居中</label>
+              <p class="rule-desc">使 <code>∑</code> 和 <code>∏</code> 的上下标居中显示于正上方与正下方</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixNaryLimLoc" data-rule="fixNaryLimLoc" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 6 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixDoubleIntegralRegion">二重积分区域居中</label>
+              <p class="rule-desc">将二重/三重积分区域 (如 <code>D</code>) 固定在 <code>∬</code> 符号正下方</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixDoubleIntegralRegion" data-rule="fixDoubleIntegralRegion" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 7 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixIntegralSize">固定积分号高度</label>
+              <p class="rule-desc">防止积分符号随内容过度拉伸变长，保持大小协调</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixIntegralSize" data-rule="fixIntegralSize" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 8 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixPiecewiseAlignment">分段函数左对齐</label>
+              <p class="rule-desc">将分段函数右侧的条件列统一改为左对齐</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixPiecewiseAlignment" data-rule="fixPiecewiseAlignment" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 9 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixEvalBar">修复代入线高度</label>
+              <p class="rule-desc">将求导/积分代入短线 <code>|</code> 改为自适应高度的定界竖线</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixEvalBar" data-rule="fixEvalBar" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 10 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixTypography">正斜体规范</label>
+              <p class="rule-desc">数字、微分 <code>d</code>、常数 <code>e</code>、转置 <code>T</code> 设为正体，变量保持斜体</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixTypography" data-rule="fixTypography" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 11 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixSetBraces">集合大括号修复</label>
+              <p class="rule-desc">修正集合定义中的大括号定界符显示</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixSetBraces" data-rule="fixSetBraces" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 规则 12 -->
+          <div class="rule-item">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_fixFontTimesNewRoman">公式字体设为 Times New Roman</label>
+              <p class="rule-desc">将公式中的英文与数字字体设为标准的 Times New Roman</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_fixFontTimesNewRoman" data-rule="fixFontTimesNewRoman" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部附加选项 -->
+      <div class="sidebar-action-box">
+        <div class="export-options">
+          <label class="checkbox-label" for="chkExportPdf">
+            <input type="checkbox" id="chkExportPdf">
+            <span>保存时同时导出 PDF 文档</span>
+          </label>
+        </div>
+        <div id="statusMessage" class="status-tip">等待打开文档</div>
+      </div>
+    </aside>
+
+    <!-- 右侧主区域：Artifacts 级纸张排版与对比 -->
+    <main class="content-area">
+      <!-- Claude 风格极简分段工具栏 -->
+      <div class="toolbar">
+        <!-- Claude 药丸分段控制器 -->
+        <div class="segmented-control tabs-group">
+          <button id="btnTabDocument" class="tab-btn active" title="A4 纸张页面排版，实时查看正文与公式">
+            <span>页面排版</span>
+          </button>
+          <button id="btnTabNativeRender" class="tab-btn" title="调用系统 Word 引擎渲染的高清真实画面">
+            <span>原生打印</span>
+          </button>
+          <button id="btnTabIssues" class="tab-btn" title="查看公式修改前后的对比明细">
+            <span>优化对比</span>
+            <span id="badgeIssueCount" class="tab-badge">0</span>
+          </button>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="search-box">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="inputSearch" placeholder="搜索题目、公式关键字或段落序号...">
+        </div>
+
+        <!-- 文档视图专用控制项 -->
+        <div id="docViewControls" class="view-controls">
+          <div class="preview-mode-group">
+            <span class="control-label">公式显示：</span>
+            <button id="btnShowRepaired" class="toggle-btn active" title="显示应用修改规则后的公式">修复后</button>
+            <button id="btnShowOriginal" class="toggle-btn" title="显示原始未修复的公式">原始公式</button>
+          </div>
+          <label class="highlight-toggle-label" title="在纸张页面上用浅绿色标记出被优化的公式">
+            <input type="checkbox" id="chkHighlightModified" checked>
+            <span>高亮修改项</span>
+          </label>
+        </div>
+
+        <!-- 原生高清渲染视图专用控制项 -->
+        <div id="nativeViewControls" class="view-controls" style="display: none;">
+          <button id="btnRefreshNative" class="btn btn-secondary btn-sm" title="重新调用 Word 引擎生成最新渲染">
+            <span>🔄</span> 刷新 Word 渲染
+          </button>
+          <span class="control-label" id="labelNativePageInfo">共 0 页</span>
+        </div>
+
+        <!-- 对比视图专用控制项 -->
+        <div id="issuesViewControls" class="view-controls" style="display: none;">
+          <div class="filter-group">
+            <label for="selectRuleFilter">规则筛选：</label>
+            <select id="selectRuleFilter">
+              <option value="ALL">全部修改项</option>
+              <option value="fixNaryEmptyOperand">消除积分虚线框</option>
+              <option value="fixIsolatedDelimiters">修复括号上标</option>
+              <option value="splitGluedTokens">拆分连写函数</option>
+              <option value="fixLimits">极限下标居中</option>
+              <option value="fixNaryLimLoc">求和/乘积上下标居中</option>
+              <option value="fixDoubleIntegralRegion">二重积分区域居中</option>
+              <option value="fixIntegralSize">固定积分号高度</option>
+              <option value="fixPiecewiseAlignment">分段函数左对齐</option>
+              <option value="fixEvalBar">修复代入线高度</option>
+              <option value="fixTypography">正斜体规范</option>
+              <option value="fixSetBraces">集合大括号修复</option>
+              <option value="fixFontTimesNewRoman">公式字体设为 Times New Roman</option>
+            </select>
+          </div>
+          <div class="view-mode-toggle">
+            <button id="btnViewSplit" class="view-btn active" title="左右对照">左右对比</button>
+            <button id="btnViewAfter" class="view-btn" title="仅查看修复后效果">仅看修复后</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图容器 -->
+      <div class="views-wrapper">
+        <!-- 1. Word A4 纸张页面排版视图 -->
+        <div class="document-view active" id="documentView">
+          <div class="word-paper-container">
+            <div class="word-a4-page" id="documentSheet">
+              <!-- 动态生成的段落与公式内容将填充在此 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Word 原生高清渲染视图（调用真实 Word 引擎导出的高保真画面） -->
+        <div class="native-render-view" id="nativeRenderView" style="display: none;">
+          <div class="native-pages-container" id="nativePagesContainer">
+            <div class="native-loading-hint">
+              <div class="spinner-small"></div>
+              <span>正在调用本机 Microsoft Word 引擎生成高保真原生渲染...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 修改对比视图 -->
+        <div class="issues-view" id="issuesView" style="display: none;">
+          <div class="issues-container" id="issuesContainer">
+            <!-- 动态生成的修改对比卡片填充在此 -->
+          </div>
+        </div>
+
+        <!-- 空状态占位提示 -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <h3>开启试卷或文档</h3>
+          <p>将任意 <code>.docx</code> 文件拖放到此处，或点击右上角“打开文档”</p>
+          <div class="drop-zone-hint">
+            <span>支持包含极限、积分、矩阵与分段函数的各类公式试卷</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claude 风格底部状态栏 -->
+      <footer class="word-status-bar">
+        <div class="status-bar-left">
+          <span class="status-item" id="sbParagraphCount">段落: -</span>
+          <span class="status-item-divider">·</span>
+          <span class="status-item" id="sbFormulaCount">公式: -</span>
+          <span class="status-item-divider">·</span>
+          <span class="status-item" id="sbIssueCount">可优化: -</span>
+        </div>
+        <div class="status-bar-right">
+          <span class="status-item" id="sbDocStatus">就绪</span>
+          <span class="status-item-divider">·</span>
+          <span class="status-item">A4 纸张 · 100% 视图</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 公式悬停对比浮窗 (Claude Artifacts 风格) -->
+  <div id="mathTooltip" class="math-tooltip" style="display: none;">
+    <div class="tooltip-header">
+      <span class="tooltip-title">公式优化细节</span>
+      <span class="tooltip-id" id="tooltipId">#1</span>
+    </div>
+    <div class="tooltip-rules" id="tooltipRules"></div>
+    <div class="tooltip-comparison">
+      <div class="tooltip-col">
+        <span class="col-lbl">修改前：</span>
+        <div class="tooltip-render" id="tooltipBefore"></div>
+      </div>
+      <div class="tooltip-col">
+        <span class="col-lbl">修改后：</span>
+        <div class="tooltip-render" id="tooltipAfter"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载提示遮罩 -->
+  <div class="modal-overlay" id="loadingModal">
+    <div class="modal-card">
+      <div class="spinner"></div>
+      <h3 id="loadingTitle">正在解析文档内容...</h3>
+      <p id="loadingSubtitle">正在读取段落与公式并渲染</p>
+    </div>
+  </div>
+
+  <!-- 脚本库与渲染控制 -->
+  <script src="node_modules/katex/dist/katex.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

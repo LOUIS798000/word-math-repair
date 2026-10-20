@@ -1,0 +1,1307 @@
+/* ===================================================================
+   Claude Desktop Design System (CDS) Inspired Theme
+   Based on open-claude-ui (Warm Oatmeal, Terracotta & Editorial Typography)
+   =================================================================== */
+
+:root {
+  /* 1. Claude 标志性温润主色体系 */
+  --bg-app: #FAF9F5;              /* Claude 官方燕麦暖白主底色 */
+  --bg-sidebar: #F3F1EB;          /* 温暖浅沙色侧边栏 */
+  --bg-card: #FFFFFF;             /* 纯净纸张与卡片白 */
+  --bg-card-subtle: #F7F6F1;      /* 浅暖底色 */
+  --bg-tag: #E8E5DC;              /* 次级功能按钮与标签填充 */
+  --bg-tag-hover: #DDD9CE;        /* 标签悬停色 */
+  --bg-input: #FFFFFF;            /* 纯白输入框 */
+
+  /* 2. Claude 标志性陶土暖橙 (Terracotta Accent) */
+  --accent-terracotta: #C96442;
+  --accent-terracotta-hover: #B55737;
+  --accent-terracotta-active: #9E492C;
+  --accent-terracotta-subtle: rgba(201, 100, 66, 0.08);
+  --accent-terracotta-ring: rgba(201, 100, 66, 0.25);
+  --accent-terracotta-border: rgba(201, 100, 66, 0.35);
+
+  /* 3. 暖炭黑文字层级 (Warm Charcoal & Near Black) */
+  --text-primary: #141413;        /* 沉稳温润接近黑 */
+  --text-secondary: #4D4C48;      /* 炭灰次级文字 */
+  --text-muted: #7E7C75;          /* 浅暖灰辅助文字 */
+  --text-disabled: #A6A49D;       /* 禁用状态文字 */
+
+  /* 4. 精致环形边框系统 (Ring-based Border System) */
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.22);
+  --ring-border: 0 0 0 1px var(--border-subtle);
+
+  /* 5. 阴影系统 (Soft Ambient & Diffuse Shadows) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.07);
+  --shadow-paper: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-floating: 0 8px 28px -4px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  /* 6. 字体家族：出版级 Serif + 现代 Clean Sans + 数学字体 */
+  --font-serif: "Iowan Old Style", "Apple Garamond", Georgia, "Times New Roman", "Source Serif Pro", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-paper: "Times New Roman", SimSun, "宋体", serif;
+
+  /* 7. 物理弹簧动效贝塞尔曲线 (Spring Easing from open-claude-ui) */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.22s;
+
+  /* 8. 圆角几何规格 */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+}
+
+/* ===================================================================
+   极细精致滚动条 (Claude Desktop Scrollbars)
+   =================================================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ===================================================================
+   1. 顶部操作栏 (App Header - Claude Desktop Style)
+   =================================================================== */
+
+.app-header {
+  height: 54px;
+  background-color: var(--bg-app);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 侧边栏折叠按钮 */
+.btn-icon-sidebar {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.btn-icon-sidebar:hover {
+  background-color: var(--bg-tag);
+  color: var(--text-primary);
+}
+
+.btn-icon-sidebar:active {
+  transform: scale(0.95);
+}
+
+/* Claude 风格温润陶土橙徽标 */
+.claude-brand-badge,
+.app-brand-logo-wrap {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+  cursor: pointer;
+}
+
+.app-brand-logo-wrap:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+.app-brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.claude-sparkle-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.app-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-title-group h1 {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.header-pill-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  background-color: var(--bg-tag);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 统一按钮设计 (Claude Desktop Buttons) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--duration-fast) var(--ease-spring);
+  white-space: nowrap;
+}
+
+.btn-icon-svg {
+  flex-shrink: 0;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 次级按钮 (Warm Sand 燕麦暖底) */
+.btn-secondary {
+  background-color: var(--bg-tag);
+  color: var(--text-primary);
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-tag-hover);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 陶土橙核心操作按钮 (Terracotta Primary) */
+.btn-terracotta {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(201, 100, 66, 0.25), 0 0 0 1px rgba(201, 100, 66, 0.2);
+}
+
+.btn-terracotta:hover:not(:disabled) {
+  background-color: var(--accent-terracotta-hover);
+  box-shadow: 0 2px 6px rgba(201, 100, 66, 0.35);
+}
+
+.btn-terracotta:active:not(:disabled) {
+  background-color: var(--accent-terracotta-active);
+}
+
+/* 极简深炭色主按钮 (Near Black Primary) */
+.btn-primary {
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #262523;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ===================================================================
+   2. 主工作区布局 (Main Container)
+   =================================================================== */
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===================================================================
+   3. 左侧控制面板 (Sidebar / Inspector)
+   =================================================================== */
+
+.sidebar {
+  width: 290px;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width var(--duration-normal) var(--ease-spring), opacity var(--duration-fast);
+}
+
+.sidebar.collapsed {
+  width: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+  border-right-color: transparent;
+}
+
+.sidebar-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-header h2 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.quick-preset-links {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+  transition: color var(--duration-fast);
+}
+
+.link-btn:hover {
+  color: var(--accent-terracotta);
+  background-color: var(--accent-terracotta-subtle);
+}
+
+.divider {
+  color: var(--border-strong);
+  font-size: 10px;
+}
+
+/* 当前文件卡片 */
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--bg-card);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1px dashed transparent;
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.file-card.drag-over {
+  border-color: var(--accent-terracotta);
+  background-color: #FFFDF9;
+}
+
+.file-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-tag);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-info {
+  overflow: hidden;
+  flex: 1;
+}
+
+.file-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* 规则列表 */
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast);
+}
+
+.rule-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.rule-info {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.rule-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: block;
+}
+
+.rule-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.rule-desc code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background-color: var(--bg-tag);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--text-secondary);
+}
+
+/* ===================================================================
+   Claude 经典 Spring Switch 弹簧开关
+   =================================================================== */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #D6D3CA;
+  border-radius: var(--radius-pill);
+  transition: background-color 0.2s var(--ease-spring);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s var(--ease-spring);
+}
+
+input:checked + .slider {
+  background-color: var(--accent-terracotta);
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+/* 底部状态与选项 */
+.sidebar-action-box {
+  padding: 14px 16px;
+  margin-top: auto;
+  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-sidebar);
+}
+
+.export-options {
+  margin-bottom: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--accent-terracotta);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.status-tip {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ===================================================================
+   4. 右侧主工作区 (Content Area)
+   =================================================================== */
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 工具栏 */
+.toolbar {
+  height: 48px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-app);
+  flex-shrink: 0;
+}
+
+/* Claude 药丸分段控制器 (Segmented Control Pill) */
+.segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-tag);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  height: 26px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tab-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  background-color: var(--accent-terracotta-subtle);
+  color: var(--accent-terracotta);
+  border-radius: var(--radius-pill);
+}
+
+/* 搜索框 (Claude Pill Search) */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card);
+  padding: 0 12px;
+  height: 30px;
+  width: 260px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast);
+}
+
+.search-box:focus-within {
+  width: 320px;
+  box-shadow: 0 0 0 2px var(--accent-terracotta-ring), var(--shadow-sm);
+}
+
+.search-icon {
+  color: var(--text-muted);
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.search-box input::placeholder {
+  color: var(--text-disabled);
+}
+
+/* 视图附加控制项 */
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.preview-mode-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toggle-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.toggle-btn:hover {
+  background-color: var(--bg-tag);
+}
+
+.toggle-btn.active {
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  border-color: var(--text-primary);
+}
+
+.highlight-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.highlight-toggle-label input[type="checkbox"] {
+  accent-color: var(--accent-terracotta);
+  cursor: pointer;
+}
+
+/* 筛选与对比模式 */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.filter-group select {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.view-mode-toggle {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.view-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.view-btn.active {
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  border-color: var(--text-primary);
+}
+
+/* ===================================================================
+   5. 视图包装器 (Views Wrapper)
+   =================================================================== */
+
+.views-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--bg-app);
+}
+
+/* ===================================================================
+   6. Word A4 纸张排版视图 (Document View)
+   =================================================================== */
+
+.document-view {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: none;
+  padding: 28px 20px 48px;
+}
+
+.document-view.active {
+  display: block;
+}
+
+.word-paper-container {
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* A4 纸张卡片 (Artifacts Paper Card) */
+.word-a4-page {
+  width: 820px;
+  min-height: 1160px;
+  background-color: var(--bg-card);
+  padding: 64px 72px;
+  box-shadow: var(--shadow-paper);
+  border-radius: 4px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.doc-paragraph {
+  position: relative;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  transition: background-color var(--duration-fast);
+  border-radius: 4px;
+}
+
+.p-index-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.22);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+  user-select: none;
+  transition: color var(--duration-fast);
+}
+
+.doc-paragraph:hover .p-index-tag {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.p-body {
+  flex: 1;
+  font-family: var(--font-paper);
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: #1A1A18;
+  text-align: justify;
+  text-justify: inter-ideograph;
+  word-break: break-word;
+}
+
+.doc-paragraph.has-modified-formula .p-index-tag {
+  color: rgba(201, 100, 66, 0.45);
+}
+
+.doc-paragraph.has-modified-formula:hover .p-index-tag {
+  color: var(--accent-terracotta);
+}
+
+/* 发生规范化修复的公式高亮 (Claude Diff Highlight) */
+.math-highlight-modified {
+  background-color: var(--accent-terracotta-subtle);
+  border-bottom: 1.5px solid rgba(201, 100, 66, 0.45);
+  border-radius: 3px;
+  padding: 0 4px;
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+  display: inline-block;
+  margin: 0 1px;
+}
+
+.math-highlight-modified:hover {
+  background-color: rgba(201, 100, 66, 0.16);
+  border-bottom-color: var(--accent-terracotta);
+}
+
+.math-inline-render {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+.math-display-render {
+  display: block;
+  text-align: center;
+  margin: 12px 0;
+}
+
+/* ===================================================================
+   7. 原生打印高清视图 (Native Render View)
+   =================================================================== */
+
+.native-render-view {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 28px 20px 48px;
+}
+
+.native-pages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.native-page-wrapper {
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-paper);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.native-page-img {
+  display: block;
+  max-width: 860px;
+  height: auto;
+}
+
+.native-loading-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ===================================================================
+   8. 修改对比视图 (Issues View)
+   =================================================================== */
+
+.issues-view {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 32px 48px;
+}
+
+.issues-container {
+  max-width: 1060px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 对比卡片 (Claude Card Style) */
+.issue-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 18px 22px;
+  transition: all var(--duration-fast) var(--ease-spring);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.issue-card:hover {
+  box-shadow: var(--shadow-floating);
+  transform: translateY(-1px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.issue-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+}
+
+.paragraph-badge {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.rule-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rule-tags .tag {
+  font-size: 11px;
+  font-weight: 500;
+  background-color: var(--accent-terracotta-subtle);
+  color: var(--accent-terracotta);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.card-snippet {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  background-color: var(--bg-card-subtle);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--accent-terracotta);
+}
+
+.card-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.comparison-col {
+  background-color: var(--bg-card-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: var(--ring-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.col-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+}
+
+.col-after .col-title {
+  color: var(--accent-terracotta);
+}
+
+.math-render-box {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  font-size: 15px;
+  padding: 8px 0;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
+}
+
+.footer-icon {
+  font-size: 12px;
+}
+
+/* ===================================================================
+   9. 空状态提示 (Empty State)
+   =================================================================== */
+
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--text-secondary);
+  max-width: 420px;
+  padding: 32px;
+}
+
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-terracotta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.empty-state h3 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.empty-state code {
+  font-family: var(--font-mono);
+  background-color: var(--bg-tag);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.drop-zone-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  background-color: var(--bg-tag);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+/* ===================================================================
+   10. 公式悬停对比浮窗 (Math Tooltip - Claude Artifacts Style)
+   =================================================================== */
+
+.math-tooltip {
+  position: fixed;
+  z-index: 1000;
+  width: 380px;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-floating);
+  padding: 14px 16px;
+  pointer-events: none;
+  animation: fadeIn 0.15s var(--ease-spring);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.tooltip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-terracotta);
+}
+
+.tooltip-id {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background-color: var(--bg-tag);
+  color: var(--text-secondary);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.tooltip-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tooltip-rules .rule-badge {
+  font-size: 10.5px;
+  background-color: var(--accent-terracotta-subtle);
+  color: var(--accent-terracotta);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.tooltip-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tooltip-col {
+  background-color: var(--bg-card-subtle);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring-border);
+}
+
+.col-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.tooltip-render {
+  font-size: 13.5px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* ===================================================================
+   11. 底部状态栏 (Status Bar)
+   =================================================================== */
+
+.word-status-bar {
+  height: 28px;
+  background-color: var(--bg-app);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-item-divider {
+  color: var(--border-strong);
+}
+
+/* ===================================================================
+   12. 模态框遮罩 (Modal Overlay)
+   =================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(20, 20, 19, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background-color: #FFFFFF;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-floating);
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 340px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid var(--bg-tag);
+  border-top-color: var(--accent-terracotta);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 16px;
+}
+
+.spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--bg-tag);
+  border-top-color: var(--accent-terracotta);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.modal-card h3 {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.modal-card p {
+  font-size: 12px;
+  color: var(--text-muted);
+}

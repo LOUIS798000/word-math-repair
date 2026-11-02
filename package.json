@@ -1,18 +1,95 @@
 {
   "name": "word-math-omml-repairer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Word 数学公式 (OMML) 智能检测与排版修复专家",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build:engine": "python -m PyInstaller --noconfirm --clean build_engine/engine.spec --distpath build_engine/dist --workpath build_engine/work",
+    "pack": "electron-builder --win --dir",
+    "dist": "electron-builder --win",
+    "test": "python -m unittest tests/test_bug_fixes.py"
   },
-  "keywords": ["word", "omml", "math", "mineru", "docx", "latex", "repair"],
+  "keywords": [
+    "word",
+    "omml",
+    "math",
+    "mineru",
+    "docx",
+    "latex",
+    "repair"
+  ],
   "author": "Antigravity",
   "license": "MIT",
   "dependencies": {
     "katex": "^0.16.11"
   },
   "devDependencies": {
-    "electron": "^44.9.1"
+    "electron": "^44.9.1",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.louis.wordmathrepair",
+    "productName": "Word 公式修复工具",
+    "copyright": "Copyright © 2026 Word Math Repairer",
+    "directories": {
+      "output": "release",
+      "buildResources": "build_resources"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js",
+      "styles.css",
+      "rules-config.js",
+      "icon.png",
+      "icon.ico",
+      "package.json",
+      "node_modules/katex/**"
+    ],
+    "extraResources": [
+      {
+        "from": "build_engine/dist/engine",
+        "to": "engine"
+      },
+      {
+        "from": "sample.docx",
+        "to": "sample.docx"
+      }
+    ],
+    "compression": "maximum",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "WordMathRepair-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Word 公式修复工具",
+      "artifactName": "WordMathRepair-Setup-${version}.${ext}",
+      "include": "installer.nsh",
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "WordMathRepair-Portable-${version}.${ext}"
+    }
   }
 }

@@ -14,6 +14,7 @@ let nativeRenderData = null;
 // DOM Elements
 const btnOpenFile = document.getElementById('btnOpenFile');
 const btnQuickSample = document.getElementById('btnQuickSample');
+const btnBatchRepair = document.getElementById('btnBatchRepair');
 const btnOpenInWord = document.getElementById('btnOpenInWord');
 const btnRepairAndSave = document.getElementById('btnRepairAndSave');
 const chkExportPdf = document.getElementById('chkExportPdf');
@@ -81,7 +82,90 @@ if (btnToggleSidebar && appSidebar) {
   });
 }
 
+// ---------- 规则侧边栏：由 rules-config.js 生成 ----------
+const ALL_RULES = window.RULE_GROUPS.flatMap(g => g.rules);
+const RULE_STORE_KEY = 'wmr.ruleOptions.v2';
+const savedRuleOptions = (() => {
+  try { return JSON.parse(localStorage.getItem(RULE_STORE_KEY) || '{}'); } catch (_) { return {}; }
+})();
+
+(function buildRuleSidebar() {
+  const list = document.getElementById('rulesList');
+  const collapsed = JSON.parse(localStorage.getItem('wmr.collapsedGroups') || '[]');
+  list.innerHTML = window.RULE_GROUPS.map(g => `
+    <div class="rule-group ${collapsed.includes(g.id) ? 'collapsed' : ''}" data-group="${g.id}">
+      <button class="rule-group-header" type="button">
+        <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <span class="rule-group-title">${g.title}</span>
+        <span class="rule-group-count" data-count-for="${g.id}"></span>
+      </button>
+      <div class="rule-group-body">
+        ${g.rules.map(r => {
+          const on = (r.key in savedRuleOptions) ? savedRuleOptions[r.key] : !r.defaultOff;
+          return `
+          <div class="rule-item" data-rule-item="${r.key}">
+            <div class="rule-info">
+              <label class="rule-title" for="rule_${r.key}">${r.name}<span class="rule-hit" data-hit-for="${r.key}"></span></label>
+              <p class="rule-desc">${r.desc}</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule_${r.key}" data-rule="${r.key}" ${on ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+
+  list.querySelectorAll('.rule-group-header').forEach(h => h.addEventListener('click', () => {
+    h.parentElement.classList.toggle('collapsed');
+    const ids = [...list.querySelectorAll('.rule-group.collapsed')].map(x => x.dataset.group);
+    localStorage.setItem('wmr.collapsedGroups', JSON.stringify(ids));
+  }));
+
+  const sel = document.getElementById('selectRuleFilter');
+  window.RULE_GROUPS.forEach(g => {
+    const og = document.createElement('optgroup');
+    og.label = g.title;
+    g.rules.forEach(r => og.appendChild(new Option(r.name, r.key)));
+    sel.appendChild(og);
+  });
+})();
+
+function updateGroupCounts() {
+  window.RULE_GROUPS.forEach(g => {
+    const on = g.rules.filter(r => document.getElementById(`rule_${r.key}`).checked).length;
+    const el = document.querySelector(`[data-count-for="${g.id}"]`);
+    if (el) el.textContent = `${on}/${g.rules.length}`;
+  });
+}
+
+function updateRuleHits(issuesFound) {
+  ALL_RULES.forEach(r => {
+    const el = document.querySelector(`[data-hit-for="${r.key}"]`);
+    if (!el) return;
+    const n = issuesFound ? (issuesFound[r.key] || 0) : 0;
+    el.textContent = n ? n : '';
+    el.classList.toggle('visible', n > 0);
+  });
+}
+
+function applyPreset(name) {
+  const pick = window.RULE_PRESETS[name];
+  ALL_RULES.forEach(r => { document.getElementById(`rule_${r.key}`).checked = pick(r); });
+  saveRuleOptions();
+  triggerReAnalysis();
+}
+
+function saveRuleOptions() {
+  localStorage.setItem(RULE_STORE_KEY, JSON.stringify(getRuleOptions()));
+  updateGroupCounts();
+}
+
+document.querySelectorAll('.preset-chip').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+
 const ruleCheckboxes = document.querySelectorAll('.rule-item input[type="checkbox"]');
+updateGroupCounts();
 
 // Helper to get rule options
 function getRuleOptions() {
@@ -160,6 +244,7 @@ async function loadAndAnalyzeDocument(filePath) {
     }
 
     currentAnalysisData = result;
+    updateRuleHits(result.issuesFound);
 
     // Update Status Bar & Header in Claude style
     sbParagraphCount.textContent = `段落: ${result.totalParagraphs}`;
@@ -291,6 +376,21 @@ function renderDocumentView() {
       }
     });
 
+    // 公式编号：修复后视图里显示为“公式居中 + 编号右对齐”
+    if (isRepaired && p.eqNumber) {
+      const mathParts = p.elements.filter(e => e.type === 'math').map(elem => {
+        const latex = elem.isModified ? elem.afterLatex : elem.beforeLatex;
+        return renderLatexHtml(latex, true);
+      }).join('');
+      const firstMath = p.elements.find(e => e.type === 'math');
+      const modClass = isHighlight ? 'math-modified' : '';
+      pContentHtml = `
+        <div class="doc-math-numbered ${modClass}" data-math-id="${firstMath ? firstMath.mathId : ''}">
+          <div class="eq-body">${mathParts}</div>
+          <div class="eq-number">(${escapeHtml(p.eqNumber)})</div>
+        </div>`;
+    }
+
     const isEmpty = p.elements.length === 0 || (!pContentHtml.trim());
     if (isEmpty) {
       pContentHtml = '&nbsp;';
@@ -362,7 +462,9 @@ function displayNativePages(data) {
   let html = '';
   const timestamp = Date.now();
   data.renderedPages.forEach((imgName, idx) => {
-    const imgSrc = `rendered_pages/${imgName}?t=${timestamp}`;
+    // 渲染图片在用户数据目录 (见 main.js)，用绝对 file:// 地址加载
+    const dirUrl = 'file:///' + encodeURI(String(data.outputDir).replace(/\\/g, '/'));
+    const imgSrc = `${dirUrl}/${imgName}?t=${timestamp}`;
     html += `
       <div class="native-page-card" data-page="${idx + 1}">
         <div class="native-page-header">
@@ -615,24 +717,15 @@ btnViewAfter.addEventListener('click', () => {
 // Rule switch listeners
 ruleCheckboxes.forEach(cb => {
   cb.addEventListener('change', () => {
+    saveRuleOptions();
     triggerReAnalysis();
   });
 });
 
-btnSelectAllRules.addEventListener('click', () => {
-  ruleCheckboxes.forEach(cb => cb.checked = true);
-  triggerReAnalysis();
-});
-
-btnClearRules.addEventListener('click', () => {
-  ruleCheckboxes.forEach(cb => cb.checked = false);
-  triggerReAnalysis();
-});
-
-btnResetRules.addEventListener('click', () => {
-  ruleCheckboxes.forEach(cb => cb.checked = true);
-  triggerReAnalysis();
-});
+btnSelectAllRules.addEventListener('click', () => applyPreset('all'));
+btnClearRules.addEventListener('click', () => applyPreset('none'));
+// “推荐”恢复默认开关 (自动编号默认关闭)
+btnResetRules.addEventListener('click', () => applyPreset('recommended'));
 
 // Button: Open File
 btnOpenFile.addEventListener('click', async () => {
@@ -649,6 +742,50 @@ btnQuickSample.addEventListener('click', async () => {
     loadAndAnalyzeDocument(samplePath);
   } else {
     alert('未在工作区找到示例文件，请点击“打开文档”手动选取。');
+  }
+});
+
+// Button: Batch Repair
+btnBatchRepair.addEventListener('click', async () => {
+  const files = await window.api.openFileDialog(true);
+  if (!files || files.length === 0) return;
+
+  const outputDir = await window.api.selectDirectory();
+  if (!outputDir) return;
+
+  const exportPdf = chkExportPdf ? chkExportPdf.checked : false;
+  let stopProgress = null;
+
+  showLoading(`正在批量修复 1/${files.length}...`, '正在准备文档');
+
+  try {
+    stopProgress = window.api.onBatchProgress((progress) => {
+      showLoading(
+        `正在批量修复 ${progress.index}/${progress.total}...`,
+        progress.fileName
+      );
+    });
+
+    const { results } = await window.api.repairBatch(files, outputDir, getRuleOptions(), exportPdf);
+    const succeeded = results.filter(r => r.ok);
+    const failed = results.filter(r => !r.ok);
+
+    let message = `批量修复完成：成功 ${succeeded.length} 个，失败 ${failed.length} 个。\n输出目录：${outputDir}`;
+    if (failed.length > 0) {
+      const shown = failed.slice(0, 10).map(f => `- ${f.file}: ${f.error}`).join('\n');
+      message += `\n\n失败详情：\n${shown}`;
+      if (failed.length > 10) message += `\n…另有 ${failed.length - 10} 个失败`;
+    }
+
+    statusMessage.textContent = `批量修复完成：成功 ${succeeded.length}/${results.length}，输出至 ${outputDir}`;
+    if (confirm(`${message}\n\n是否打开输出文件夹？`)) {
+      window.api.openPath(outputDir);
+    }
+  } catch (err) {
+    alert(`批量修复失败: ${err.message}`);
+  } finally {
+    if (stopProgress) stopProgress();
+    hideLoading();
   }
 });
 
@@ -717,8 +854,24 @@ window.addEventListener('drop', (e) => {
   }
 });
 
-// Auto-load sample on startup
+// Open .docx passed via "Open with" / second instance
+if (window.api && typeof window.api.onOpenFile === 'function') {
+  window.api.onOpenFile((filePath) => {
+    if (filePath && filePath.toLowerCase().endsWith('.docx')) {
+      loadAndAnalyzeDocument(filePath);
+    }
+  });
+}
+
+// Auto-load the launch file, otherwise the bundled sample, on startup
 window.addEventListener('DOMContentLoaded', async () => {
+  const launchFile = window.api && typeof window.api.getLaunchFile === 'function'
+    ? await window.api.getLaunchFile()
+    : null;
+  if (launchFile) {
+    loadAndAnalyzeDocument(launchFile);
+    return;
+  }
   const sample = await window.api.getDefaultSamplePath();
   if (sample) {
     loadAndAnalyzeDocument(sample);

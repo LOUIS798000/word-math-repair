@@ -3,14 +3,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 
-console.log('[DEBUG] 1. Script started');
-
 // 1. Configure hardware acceleration and sandbox safely
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('disable-gpu');
-
-console.log('[DEBUG] 2. Flags appended');
 
 // 2. Set safe isolated userData path in standard OS AppData
 try {
@@ -19,7 +15,6 @@ try {
     fs.mkdirSync(userDataPath, { recursive: true });
   }
   app.setPath('userData', userDataPath);
-  console.log('[DEBUG] 3. UserData set to:', userDataPath);
 } catch (e) {
   console.error('Failed to set userData path:', e);
 }
@@ -27,12 +22,25 @@ try {
 // 3. Ensure single instance safely
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
-  console.log('[INFO] Another instance is already running. Requesting focus and exiting secondary instance.');
   app.quit();
   return;
 }
 
 let mainWindow = null;
+let pendingOpenPath = null;
+
+// 支持通过「打开方式」/命令行直接传入 .docx
+function extractDocxPath(argv) {
+  if (!Array.isArray(argv)) return null;
+  for (const arg of argv) {
+    if (typeof arg === 'string' && !arg.startsWith('-') && /\.docx$/i.test(arg)) {
+      return path.resolve(arg);
+    }
+  }
+  return null;
+}
+
+pendingOpenPath = extractDocxPath(process.argv.slice(1));
 
 function createWindow() {
   const iconPath = path.join(__dirname, 'icon.png');
@@ -51,30 +59,29 @@ function createWindow() {
     autoHideMenuBar: true,
     show: true
   });
-  console.log('[DEBUG] 7. BrowserWindow constructed');
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  console.log('[DEBUG] 8. loadFile called');
 
   mainWindow.webContents.on('did-finish-load', () => {
-    console.log('[DEBUG] 9. did-finish-load fired!');
     if (mainWindow) {
       mainWindow.show();
       mainWindow.focus();
 
       if (process.argv.includes('--capture-preview')) {
+        mainWindow.webContents.on('console-message', (_e, level, message) => {
+          if (level >= 2) console.log('[RENDERER]', message);
+        });
         setTimeout(async () => {
           try {
             const image = await mainWindow.webContents.capturePage();
-            const previewPath = path.join(__dirname, '..', 'claude_ui_preview.png');
+            const previewPath = path.join(app.getPath('userData'), 'ui_preview.png');
             fs.writeFileSync(previewPath, image.toPNG());
-            console.log('[DEBUG] Screenshot captured successfully to:', previewPath);
             app.quit();
           } catch (e) {
             console.error('Failed to capture page:', e);
             app.quit();
           }
-        }, 2500);
+        }, 6000);
       }
     }
   });
@@ -84,13 +91,11 @@ function createWindow() {
   });
 
   mainWindow.on('closed', () => {
-    console.log('[DEBUG] 10. Window closed');
     mainWindow = null;
   });
 }
 
 app.whenReady().then(() => {
-  console.log('[DEBUG] 5. app.whenReady fired');
   createWindow();
 
   app.on('activate', () => {
@@ -98,10 +103,21 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('second-instance', () => {
+app.on('second-instance', (event, commandLine) => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
+    const file = extractDocxPath(commandLine.slice(1));
+    if (file) mainWindow.webContents.send('app:openFile', file);
+  }
+});
+
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  if (mainWindow) {
+    mainWindow.webContents.send('app:openFile', filePath);
+  } else {
+    pendingOpenPath = filePath;
   }
 });
 
@@ -112,11 +128,23 @@ app.on('window-all-closed', () => {
 // Helper to run python engine
 function runPythonEngine(args) {
   return new Promise((resolve, reject) => {
-    const engineScript = path.join(__dirname, 'engine.py');
-    const pythonExe = process.platform === 'win32' ? 'python' : 'python3';
-    
-    const proc = spawn(pythonExe, [engineScript, ...args], {
-      cwd: __dirname,
+    // 打包后使用随安装包附带的 engine.exe (PyInstaller 构建)，无需用户安装 Python；
+    // 开发模式下直接调用系统 Python 运行 engine.py
+    const bundledEngine = path.join(process.resourcesPath || '', 'engine', 'engine.exe');
+    let cmd, cmdArgs, cwd;
+    if (app.isPackaged && fs.existsSync(bundledEngine)) {
+      cmd = bundledEngine;
+      cmdArgs = args;
+      cwd = path.dirname(bundledEngine);
+    } else {
+      cmd = process.platform === 'win32' ? 'python' : 'python3';
+      cmdArgs = [path.join(__dirname, 'engine.py'), ...args];
+      cwd = __dirname;
+    }
+
+    const proc = spawn(cmd, cmdArgs, {
+      cwd,
+      windowsHide: true,
       env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
 
@@ -156,7 +184,9 @@ function runPythonEngine(args) {
     });
 
     proc.on('error', (err) => {
-      reject(new Error(`无法启动 Python 进程: ${err.message}。请确保系统已安装 Python。`));
+      reject(new Error(app.isPackaged
+        ? `无法启动内置修复引擎: ${err.message}`
+        : `无法启动 Python 进程: ${err.message}。请确保系统已安装 Python。`));
     });
   });
 }
@@ -186,6 +216,15 @@ ipcMain.handle('dialog:saveFile', async (event, defaultName) => {
   return result.filePath;
 });
 
+ipcMain.handle('dialog:selectDirectory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: '选择批量修复结果的保存文件夹',
+    properties: ['openDirectory', 'createDirectory']
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
 ipcMain.handle('engine:analyze', async (event, filePath, options) => {
   return await runPythonEngine([
     '--mode', 'analyze',
@@ -207,8 +246,59 @@ ipcMain.handle('engine:repair', async (event, filePath, outputPath, options, exp
   return await runPythonEngine(args);
 });
 
+function uniqueOutputPath(dir, baseName) {
+  let candidate = path.join(dir, `${baseName}_修复.docx`);
+  let index = 2;
+  while (fs.existsSync(candidate)) {
+    candidate = path.join(dir, `${baseName}_修复_${index}.docx`);
+    index += 1;
+  }
+  return candidate;
+}
+
+ipcMain.handle('engine:repairBatch', async (event, filePaths, outputDir, options, exportPdf = false) => {
+  if (!Array.isArray(filePaths) || filePaths.length === 0) {
+    throw new Error('未选择需要修复的文档');
+  }
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const results = [];
+  for (let i = 0; i < filePaths.length; i += 1) {
+    const filePath = filePaths[i];
+    const fileName = path.basename(filePath);
+    event.sender.send('batch:progress', {
+      index: i + 1,
+      total: filePaths.length,
+      fileName
+    });
+
+    const targetPath = uniqueOutputPath(outputDir, path.basename(filePath, path.extname(filePath)));
+    const args = [
+      '--mode', 'repair',
+      '--input', filePath,
+      '--output', targetPath,
+      '--options', JSON.stringify(options || {})
+    ];
+    if (exportPdf) args.push('--export-pdf');
+
+    try {
+      const result = await runPythonEngine(args);
+      results.push({
+        file: filePath,
+        ok: true,
+        outputPath: result.savedTo || targetPath,
+        totalIssues: result.totalIssues || 0
+      });
+    } catch (err) {
+      results.push({ file: filePath, ok: false, error: err.message });
+    }
+  }
+  return { results };
+});
+
 ipcMain.handle('engine:renderPages', async (event, filePath) => {
-  const renderDir = path.join(__dirname, 'rendered_pages');
+  // 安装目录 (app.asar) 只读，渲染图片写到用户数据目录
+  const renderDir = path.join(app.getPath('userData'), 'rendered_pages');
   return await runPythonEngine([
     '--mode', 'render_pages',
     '--input', filePath,
@@ -236,8 +326,15 @@ ipcMain.handle('shell:openPath', async (event, targetPath) => {
   return false;
 });
 
+ipcMain.handle('app:getLaunchFile', async () => {
+  const file = pendingOpenPath;
+  pendingOpenPath = null;
+  return file;
+});
+
 ipcMain.handle('app:getDefaultSamplePath', async () => {
   const candidates = [
+    path.join(process.resourcesPath || '', 'sample.docx'),
     path.join(__dirname, 'sample.docx'),
     path.join(__dirname, '..', 'sample.docx'),
     path.join(__dirname, '..', '模拟卷_校对排版精修版.docx')

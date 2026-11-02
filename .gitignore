@@ -20,3 +20,7 @@ build/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Packaging outputs
+release/
+build_engine/work/

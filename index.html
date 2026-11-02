@@ -35,6 +35,10 @@
         <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         <span>示例试卷</span>
       </button>
+      <button id="btnBatchRepair" class="btn btn-secondary" title="选择多个 .docx，按当前规则批量修复到指定文件夹">
+        <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h9"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M18 21v-6"></path><path d="M15 18l3 3 3-3"></path></svg>
+        <span>批量修复</span>
+      </button>
       <button id="btnOpenInWord" class="btn btn-terracotta" title="直接在系统 Microsoft Word 软件中全屏打开此文档">
         <svg class="btn-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         <span>在 Word 中打开</span>
@@ -77,151 +81,11 @@
           </div>
         </div>
 
-        <div class="rules-list">
-          <!-- 规则 1 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixNaryEmptyOperand">消除积分虚线框</label>
-              <p class="rule-desc">补全遗漏的被积项，消除 Word 积分后的虚线方框 <code>[::]</code></p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixNaryEmptyOperand" data-rule="fixNaryEmptyOperand" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 2 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixIsolatedDelimiters">修复括号上标</label>
-              <p class="rule-desc">修复 <code>(式子)^n</code> 的括号上标结构，防止括号被误删或错位</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixIsolatedDelimiters" data-rule="fixIsolatedDelimiters" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 3 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_splitGluedTokens">拆分连写函数</label>
-              <p class="rule-desc">拆分连写的 <code>lncos</code>、<code>sincos</code>、<code>lnx</code> 等，恢复标准间距</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_splitGluedTokens" data-rule="splitGluedTokens" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 4 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixLimits">极限下标居中</label>
-              <p class="rule-desc">将 <code>lim</code> 的右下角标转为标准正下方居中显示</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixLimits" data-rule="fixLimits" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 5 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixNaryLimLoc">求和/乘积上下标居中</label>
-              <p class="rule-desc">使 <code>∑</code> 和 <code>∏</code> 的上下标居中显示于正上方与正下方</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixNaryLimLoc" data-rule="fixNaryLimLoc" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 6 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixDoubleIntegralRegion">二重积分区域居中</label>
-              <p class="rule-desc">将二重/三重积分区域 (如 <code>D</code>) 固定在 <code>∬</code> 符号正下方</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixDoubleIntegralRegion" data-rule="fixDoubleIntegralRegion" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 7 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixIntegralSize">固定积分号高度</label>
-              <p class="rule-desc">防止积分符号随内容过度拉伸变长，保持大小协调</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixIntegralSize" data-rule="fixIntegralSize" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 8 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixPiecewiseAlignment">分段函数左对齐</label>
-              <p class="rule-desc">将分段函数右侧的条件列统一改为左对齐</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixPiecewiseAlignment" data-rule="fixPiecewiseAlignment" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 9 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixEvalBar">修复代入线高度</label>
-              <p class="rule-desc">将求导/积分代入短线 <code>|</code> 改为自适应高度的定界竖线</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixEvalBar" data-rule="fixEvalBar" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 10 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixTypography">正斜体规范</label>
-              <p class="rule-desc">数字、微分 <code>d</code>、常数 <code>e</code>、转置 <code>T</code> 设为正体，变量保持斜体</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixTypography" data-rule="fixTypography" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 11 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixSetBraces">集合大括号修复</label>
-              <p class="rule-desc">修正集合定义中的大括号定界符显示</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixSetBraces" data-rule="fixSetBraces" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <!-- 规则 12 -->
-          <div class="rule-item">
-            <div class="rule-info">
-              <label class="rule-title" for="rule_fixFontTimesNewRoman">公式字体设为 Times New Roman</label>
-              <p class="rule-desc">将公式中的英文与数字字体设为标准的 Times New Roman</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="rule_fixFontTimesNewRoman" data-rule="fixFontTimesNewRoman" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="preset-chips" id="presetChips">
+          <button class="preset-chip" data-preset="exam" title="适合试卷、讲义：不自动编号">试卷模式</button>
+          <button class="preset-chip" data-preset="thesis" title="适合工科论文：开启全部规则并自动编号">论文模式</button>
         </div>
+        <div class="rules-list" id="rulesList"></div>
       </div>
 
       <!-- 底部附加选项 -->
@@ -287,18 +151,6 @@
             <label for="selectRuleFilter">规则筛选：</label>
             <select id="selectRuleFilter">
               <option value="ALL">全部修改项</option>
-              <option value="fixNaryEmptyOperand">消除积分虚线框</option>
-              <option value="fixIsolatedDelimiters">修复括号上标</option>
-              <option value="splitGluedTokens">拆分连写函数</option>
-              <option value="fixLimits">极限下标居中</option>
-              <option value="fixNaryLimLoc">求和/乘积上下标居中</option>
-              <option value="fixDoubleIntegralRegion">二重积分区域居中</option>
-              <option value="fixIntegralSize">固定积分号高度</option>
-              <option value="fixPiecewiseAlignment">分段函数左对齐</option>
-              <option value="fixEvalBar">修复代入线高度</option>
-              <option value="fixTypography">正斜体规范</option>
-              <option value="fixSetBraces">集合大括号修复</option>
-              <option value="fixFontTimesNewRoman">公式字体设为 Times New Roman</option>
             </select>
           </div>
           <div class="view-mode-toggle">
@@ -397,6 +249,7 @@
 
   <!-- 脚本库与渲染控制 -->
   <script src="node_modules/katex/dist/katex.min.js"></script>
+  <script src="rules-config.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
